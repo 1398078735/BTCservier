@@ -10,6 +10,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import java.io.IOException;
+import java.util.List;
 
 
 public class BtcConnect {
@@ -32,8 +33,10 @@ public class BtcConnect {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("id", System.currentTimeMillis() + "");//唯一标识
         jsonObject.put("jsonrpc", "2.0");//版本
-        jsonObject.put("method", "getblockcount");//命令
-        //jsonObject.put("params", 0);//参数
+        jsonObject.put("method", "getblockhash");//命令
+        int[] arr = new int[1];
+        arr[0]=0;
+        jsonObject.put("params",arr);//参数
         //序列化
         String jsonRpcStr = jsonObject.toJSONString();
         System.out.println(jsonRpcStr);

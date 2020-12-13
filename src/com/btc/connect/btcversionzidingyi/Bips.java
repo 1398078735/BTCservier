@@ -1,11 +1,11 @@
-package com.btc.connect.softutil;
+package com.btc.connect.btcversionzidingyi;
 
-public class Csv {
+public class Bips {
     private String type;
-    private String active;
-    private String height;
+    private boolean active;
+    private long height;
 
-    public Csv(String type, String active, String height) {
+    public Bips(String type, boolean active, long height) {
         this.type = type;
         this.active = active;
         this.height = height;
@@ -19,19 +19,19 @@ public class Csv {
         this.type = type;
     }
 
-    public String getActive() {
+    public boolean isActive() {
         return active;
     }
 
-    public void setActive(String active) {
+    public void setActive(boolean active) {
         this.active = active;
     }
 
-    public String getHeight() {
+    public long getHeight() {
         return height;
     }
 
-    public void setHeight(String height) {
+    public void setHeight(long height) {
         this.height = height;
     }
 }

@@ -3,53 +3,75 @@ package com.btc.connect;
 import com.alibaba.fastjson.JSON;
 import com.btc.connect.constants.Constants;
 import com.btc.connect.result.Result;
-import com.btc.connect.softutil.BlockChaininfo;
-import com.sun.org.apache.bcel.internal.generic.JsrInstruction;
+import com.btc.connect.btcversionzidingyi.ChaninIfo;
+import com.btc.connect.softutil.BlockData;
+import com.btc.connect.softutil.BtcAddress;
 import org.apache.http.HttpStatus;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class BTCService {
-    private static Map<String ,String> map = new HashMap();
+    private static Map<String, String> map = new HashMap();
+
     static {
-        map.put("Authorization","Basic "+ BcRPCUtils.base64Encode( Constants.RPCUSER+ ":" + Constants.RPCPASSWORD));
+        map.put("Authorization", "Basic " + BcRPCUtils.base64Encode(Constants.RPCUSER + ":" + Constants.RPCPASSWORD));
     }
+
     //获取比特币节点的区块总数
-    public int getBlockCount(){
-        String jsonStr = BcRPCUtils.prepareJSON("getblockcount");
-        Result result =  BcRPCUtils.executePost(map,jsonStr);
-        if (result.getCode()== HttpStatus.SC_OK) {
+    public int getBlockCount() {
+        String jsonStr = BcRPCUtils.prepareJSON(Constants.GETBLOCKCOUNT);
+        Result result = BcRPCUtils.executePost(map, jsonStr);
+        if (result == null) {
+            return -1;
+        }
+        if (result.getCode() == HttpStatus.SC_OK) {
             String countStr = result.getData().getResult();
-           return Integer.parseInt(countStr);
+            return Integer.parseInt(countStr);
         }
         return -1;//查询失败
     }
 
     //获取最新区块的哈希
-    public String getBestBlockHash(){
-        String jsonStr = BcRPCUtils.prepareJSON("getbestblockhash");
-        Result result =  BcRPCUtils.executePost(map,jsonStr);
-        if (result.getCode()== HttpStatus.SC_OK) {
+    public String getBestBlockHash() {
+        String jsonStr = BcRPCUtils.prepareJSON(Constants.GETBESTBLOCKHASH);
+        Result result = BcRPCUtils.executePost(map, jsonStr);
+        if (result == null) {
+            return null;
+        }
+        if (result.getCode() == HttpStatus.SC_OK) {
             return result.getData().getResult();
         }
         return null;//查询失败
     }
 
-    //生成一个新的比特币地址
-    public String getNewAddress(){
-        String jsonStr = BcRPCUtils.prepareJSON("getnewaddress");
-        Result result =  BcRPCUtils.executePost(map,jsonStr);
-        if (result.getCode()== HttpStatus.SC_OK) {
+    /***
+     *  //生成一个新的比特币地址
+     * @param label 标签，自定义
+     * @param address_type 三选一的地址类型,legacy,p2sh-segwit,beach32
+     * @return 返回生成的新的比特币地址，如果请求失败返回null
+     */
+    public String getNewAddress(String label, BtcAddress address_type) {
+        String address = Constants.getAddressType(address_type);
+        String jsonStr = BcRPCUtils.prepareJSON(Constants.GETNEWADDRESS, label, address);
+        Result result = BcRPCUtils.executePost(map, jsonStr);
+        if (result == null) {
+            return null;
+        }
+        if (result.getCode() == HttpStatus.SC_OK) {
             return result.getData().getResult();
         }
         return null;//查询失败
     }
 
     //获取当前比特币网络中的区块难度
-    public int getDifficulty(){
-        String jsonStr = BcRPCUtils.prepareJSON("getdifficulty");
-        Result result =  BcRPCUtils.executePost(map,jsonStr);
-        if (result.getCode()== HttpStatus.SC_OK) {
+    public int getDifficulty() {
+        String jsonStr = BcRPCUtils.prepareJSON(Constants.GETDIFFICULTY);
+        Result result = BcRPCUtils.executePost(map, jsonStr);
+        if (result == null) {
+            return -1;
+        }
+        if (result.getCode() == HttpStatus.SC_OK) {
             String countStr = result.getData().getResult();
             return Integer.parseInt(countStr);
         }
@@ -57,91 +79,166 @@ public class BTCService {
     }
 
     //通过区块的哈希值去获取区块数据
-    public String getBlockByHash(){
-        String jsonStr = BcRPCUtils.prepareJSON("getblock","000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f");
-        Result result =  BcRPCUtils.executePost(map,jsonStr);
-        if (result.getCode()== HttpStatus.SC_OK) {
-            return result.getData().getResult();
+    public BlockData getBlockByHash(String hash) {
+        //"000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"
+        String jsonStr = BcRPCUtils.prepareJSON(Constants.GETBLOCKBYHASH, hash);
+        Result result = BcRPCUtils.executePost(map, jsonStr);
+        if (result == null) {
+            return null;
+        }
+        if (result.getCode() == HttpStatus.SC_OK) {
+            return JSON.parseObject(result.getData().getResult(), BlockData.class);
         }
         return null;//查询失败
     }
 
     //获取区块链信息
-    public String getBlockChainInfo(){
-        String jsonStr = BcRPCUtils.prepareJSON("getblockchaininfo");
-        Result result =  BcRPCUtils.executePost(map,jsonStr);
-        if (result.getCode()== HttpStatus.SC_OK) {
-            return result.getData().getResult();
+    public ChaninIfo getBlockChainInfo() {
+        String jsonStr = BcRPCUtils.prepareJSON(Constants.GETBLOCKCHAININFO);
+        Result result = BcRPCUtils.executePost(map, jsonStr);
+        if (result == null) {
+            return null;
+        }
+        if (result.getCode() == HttpStatus.SC_OK) {
+            String info = result.getData().getResult();
+            //反序列化
+            return JSON.parseObject(info, ChaninIfo.class);
         }
         return null;//查询失败
     }
 
     //获取钱包的信息
-    public Object getWalletInfo(){
-        String jsonStr = BcRPCUtils.prepareJSON("getwalletinfo");
-        Result result =  BcRPCUtils.executePost(map,jsonStr);
-        if (result.getCode()== HttpStatus.SC_OK) {
+    public Object getWalletInfo() {
+        String jsonStr = BcRPCUtils.prepareJSON(Constants.GETWALLETINFO);
+        Result result = BcRPCUtils.executePost(map, jsonStr);
+        if (result == null) {
+            return null;
+        }
+        if (result.getCode() == HttpStatus.SC_OK) {
             return result.getData().getResult();
         }
         return null;//查询失败
     }
-
-    //创建一个交易
-    public String createRawtranSaction(){
-        String jsonStr = BcRPCUtils.prepareJSON("createrawtransaction");
-        Result result =  BcRPCUtils.executePost(map,jsonStr);
-        if (result.getCode()== HttpStatus.SC_OK) {
-            return result.getData().getResult();
-        }
-        return null;//查询失败
-    }
-
-    //发送一个交易
-    public String sendRawtranSaction(){
-        String jsonStr = BcRPCUtils.prepareJSON("sendrawtransaction");
-        Result result =  BcRPCUtils.executePost(map,jsonStr);
-        if (result.getCode()== HttpStatus.SC_OK) {
-            return result.getData().getResult();
-        }
-        return null;//查询失败
-    }
-
-    //签名一个交易
-    public String signRawtranSaction(){
-        String jsonStr = BcRPCUtils.prepareJSON("signrawtransaction");
-        Result result =  BcRPCUtils.executePost(map,jsonStr);
-        if (result.getCode()== HttpStatus.SC_OK) {
-            return result.getData().getResult();
-        }
-        return null;//查询失败
-    }
-
 
     //获取某个高度的哈希值
-    public String getBlockHashByHeight(){
-        String jsonStr = BcRPCUtils.prepareJSON("getblockhash",0);
-        Result result =  BcRPCUtils.executePost(map,jsonStr);
-        if (result.getCode()== HttpStatus.SC_OK) {
+    public String getBlockHashByHeight(int height) {
+        String jsonStr = BcRPCUtils.prepareJSON(Constants.GETBLOCKHASHBYHEIGHT, height);
+        Result result = BcRPCUtils.executePost(map, jsonStr);
+        System.out.println(jsonStr);
+        if (result == null) {
+            return null;
+        }
+        if (result.getCode() == HttpStatus.SC_OK) {
             return result.getData().getResult();
         }
         return null;//查询失败
     }
 
     //获取所有命令
-    public String getBlockCommand(){
-        String jsonStr = BcRPCUtils.prepareJSON("help");
-        Result result =  BcRPCUtils.executePost(map,jsonStr);
-        if (result.getCode()== HttpStatus.SC_OK) {
+    public String getBlockCommand() {
+        String jsonStr = BcRPCUtils.prepareJSON(Constants.GETBLOCKCOMMAND);
+        Result result = BcRPCUtils.executePost(map, jsonStr);
+        if (result == null) {
+            return null;
+        }
+        if (result.getCode() == HttpStatus.SC_OK) {
             return result.getData().getResult();
         }
         return null;//查询失败
     }
 
+    //获取当前服务器运行的秒数
+    public long getBlockServerTime() {
+        String jsonStr = BcRPCUtils.prepareJSON(Constants.GETBLOCKSERVERTIME);
+        Result result = BcRPCUtils.executePost(map, jsonStr);
+        if (result == null) {
+            return -1;
+        }
+        if (result.getCode() == HttpStatus.SC_OK) {
+            return Integer.parseInt(result.getData().getResult());
+        }
+        return -1;//查询失败
+    }
+
+    //设置交易比特币的费用每kb
+    public boolean getSetTxFee(int btc) {
+        String jsonStr = BcRPCUtils.prepareJSON(Constants.GETSETTXFEE, btc);
+        Result result = BcRPCUtils.executePost(map, jsonStr);
+        if (result == null) {
+            return false;
+        }
+        if (result.getCode() == HttpStatus.SC_OK) {
+            return Boolean.getBoolean(result.getData().getResult());
+        }
+        return false;//查询失败
+    }
+
+    //设置与地址关联的标签
+    public String getSetLabel(String address, String label) {
+        String jsonStr = BcRPCUtils.prepareJSON(Constants.GETSETLABEL, address, label);
+        Result result = BcRPCUtils.executePost(map, jsonStr);
+        if (result == null) {
+            return null;
+        }
+        if (result.getCode() == HttpStatus.SC_OK) {
+            return result.getData().getResult();
+        }
+        return null;//查询失败
+    }
+
+    //停止由RPC调用触发的当前钱包重新扫描。
+    public boolean getAborteScan() {
+        String jsonStr = BcRPCUtils.prepareJSON(Constants.GETABORTRESCAN);
+        Result result = BcRPCUtils.executePost(map, jsonStr);
+        if (result == null) {
+            return false;
+        }
+        if (result.getCode() == HttpStatus.SC_OK) {
+            return Boolean.getBoolean(result.getData().getResult());//中止是否成功
+        }
+        return false;//查询失败
+    }
+
+    /***
+     *
+     * @param address 1.地址(字符串，必需的)用于签名的比特币地址。
+     * @param signature 2. 签名(字符串，必需的)签名者以base64编码方式提供的签名(请参阅signmessage)。
+     * @param message 3.已签名的消息(字符串，必需的)。
+     * @return
+     */
+    //验证已签名的消息
+    public boolean getverifymessage(String address, String signature, String message) {
+        String jsonStr = BcRPCUtils.prepareJSON(Constants.GETVERIFYMESSAGE, address, signature, message);
+        Result result = BcRPCUtils.executePost(map, jsonStr);
+        if (result == null) {
+            return false;
+        }
+        if (result.getCode() == HttpStatus.SC_OK) {
+            return Boolean.getBoolean(result.getData().getResult());
+        }
+        return false;//查询失败
+    }
+
+
+    //请求向所有其他节点发送一个ping，以测量ping时间
+    public JSON getPing() {
+        String jsonStr = BcRPCUtils.prepareJSON(Constants.GETPING);
+        Result result = BcRPCUtils.executePost(map, jsonStr);
+        if (result == null) {
+            return null;
+        }
+        if (result.getCode() == HttpStatus.SC_OK) {
+            return JSON.parseObject(result.getData().getResult());
+        }
+        return null;//查询失败
+    }
+
+
 //        == Blockchain ==
 //    getbestblockhash
 //    getblock "blockhash" ( verbosity )
 //    getblockchaininfo
-//            getblockcount
+//    getblockcount
 //    getblockfilter "blockhash" ( "filtertype" )
 //    getblockhash height
 //    getblockheader "blockhash" ( verbose )
@@ -170,7 +267,7 @@ public class BTCService {
 //    help ( "command" )
 //    logging ( ["include_category",...] ["exclude_category",...] )
 //    stop
-//            uptime
+//     uptime
 //
 //== Generating ==
 //    generatetoaddress nblocks "address" ( maxtries )

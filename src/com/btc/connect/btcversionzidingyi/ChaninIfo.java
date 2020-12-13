@@ -1,29 +1,25 @@
-package com.btc.connect.softutil;
+package com.btc.connect.btcversionzidingyi;
 
-import java.util.ArrayList;
-import java.util.List;
 
-public class BlockChaininfo {
-    private String chain;
-    private int blocks;
-    private int headers;
-    private String bestblockhash;
-    private double difficulty;
-    private long mediantime;
-    private double verificationprogress;
-    private boolean initialblockdownload;
-    private String chainwork;
-    private long size_on_disk;
-    private boolean pruned;
-//    private int pruneheight;
-//    private boolean automatic_pruning;
-//    private long prune_target_size;
-    //[]:数组 集合,泛型
-    private List<Bip> softforks = new ArrayList<>();
-    private BipSoftForks bip_softforks;
-    private String warnings;
+public class ChaninIfo {
+        private String chain;
+        private int blocks;
+        private int headers;
+        private String bestblockhash;
+        private double difficulty;
+        private long mediantime;
+        private double verificationprogress;
+        private boolean initialblockdownload;
+        private String chainwork;
+        private long size_on_disk;
+        private boolean pruned;
+        private int pruneheight;
+        private boolean automatic_pruning;
+        private long prune_target_size;
+        private Softutil softforks;
+        private String warnings;
 
-    public BlockChaininfo(String chain, int blocks, int headers, String bestblockhash, double difficulty, long mediantime, double verificationprogress, boolean initialblockdownload, String chainwork, long size_on_disk, boolean pruned, List<Bip> softforks, BipSoftForks bip_softforks, String warnings) {
+    public ChaninIfo(String chain, int blocks, int headers, String bestblockhash, double difficulty, long mediantime, double verificationprogress, boolean initialblockdownload, String chainwork, long size_on_disk, boolean pruned, int pruneheight, boolean automatic_pruning, long prune_target_size, Softutil softforks, String warnings) {
         this.chain = chain;
         this.blocks = blocks;
         this.headers = headers;
@@ -35,8 +31,10 @@ public class BlockChaininfo {
         this.chainwork = chainwork;
         this.size_on_disk = size_on_disk;
         this.pruned = pruned;
+        this.pruneheight = pruneheight;
+        this.automatic_pruning = automatic_pruning;
+        this.prune_target_size = prune_target_size;
         this.softforks = softforks;
-        this.bip_softforks = bip_softforks;
         this.warnings = warnings;
     }
 
@@ -128,20 +126,36 @@ public class BlockChaininfo {
         this.pruned = pruned;
     }
 
-    public List<Bip> getSoftforks() {
+    public int getPruneheight() {
+        return pruneheight;
+    }
+
+    public void setPruneheight(int pruneheight) {
+        this.pruneheight = pruneheight;
+    }
+
+    public boolean isAutomatic_pruning() {
+        return automatic_pruning;
+    }
+
+    public void setAutomatic_pruning(boolean automatic_pruning) {
+        this.automatic_pruning = automatic_pruning;
+    }
+
+    public long getPrune_target_size() {
+        return prune_target_size;
+    }
+
+    public void setPrune_target_size(long prune_target_size) {
+        this.prune_target_size = prune_target_size;
+    }
+
+    public Softutil getSoftforks() {
         return softforks;
     }
 
-    public void setSoftforks(List<Bip> softforks) {
+    public void setSoftforks(Softutil softforks) {
         this.softforks = softforks;
-    }
-
-    public BipSoftForks getBip_softforks() {
-        return bip_softforks;
-    }
-
-    public void setBip_softforks(BipSoftForks bip_softforks) {
-        this.bip_softforks = bip_softforks;
     }
 
     public String getWarnings() {
@@ -152,3 +166,4 @@ public class BlockChaininfo {
         this.warnings = warnings;
     }
 }
+
